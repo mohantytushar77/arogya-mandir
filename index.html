@@ -700,8 +700,9 @@ footer{background:var(--charcoal);border-top:1px solid rgba(255,255,255,.06);pad
       </div>
       <div class="form-group">
         <label>Preferred Date (Tuesdays Only)</label>
-        <input type="date" id="apptDate" name="preferred_date" onchange="validateTuesday(this)">
-        <span id="dateError" style="color:#ef4444;font-size:.72rem;display:none">⚠ Clinic is open only on Tuesdays</span>
+        <select id="apptDate" name="preferred_date" onchange="onDateChange()">
+          <option value="">Select a Tuesday</option>
+        </select>
       </div>
     </div>
     <div class="form-row">
@@ -722,17 +723,10 @@ footer{background:var(--charcoal);border-top:1px solid rgba(255,255,255,.06);pad
       </div>
       <div class="form-group">
         <label>Serial Number (Max 40)</label>
-        <select id="timeSlot" name="serial_number">
-          <option value="">Select your serial no.</option>
-          <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
-          <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
-          <option>11</option><option>12</option><option>13</option><option>14</option><option>15</option>
-          <option>16</option><option>17</option><option>18</option><option>19</option><option>20</option>
-          <option>21</option><option>22</option><option>23</option><option>24</option><option>25</option>
-          <option>26</option><option>27</option><option>28</option><option>29</option><option>30</option>
-          <option>31</option><option>32</option><option>33</option><option>34</option><option>35</option>
-          <option>36</option><option>37</option><option>38</option><option>39</option><option>40</option>
+        <select id="timeSlot" name="serial_number" disabled>
+          <option value="">Select date first</option>
         </select>
+        <span id="serialInfo" style="font-size:.7rem;color:var(--orange);display:none"></span>
       </div>
     </div>
     <div class="form-row">
@@ -811,6 +805,8 @@ footer{background:var(--charcoal);border-top:1px solid rgba(255,255,255,.06);pad
 <!-- BACK TO TOP -->
 <button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
 // Preloader
 window.addEventListener('load',()=>{
@@ -829,11 +825,112 @@ window.addEventListener('scroll',()=>{
 function validateTuesday(input){
   const d=new Date(input.value);
   const err=document.getElementById('dateError');
-  if(d.getDay()!==2){
-    err.style.display='block';
-    input.value='';
+  if(d.getDay()!==2){err.style.display='block';input.value='';}
+  else{err.style.display='none';}
+}
+
+// ===== FIREBASE CONFIG =====
+// REPLACE with your Firebase project config from https://console.firebase.google.com
+const firebaseConfig={
+  apiKey:"AIzaSyCLdl5uCoSuzRD6P2DS44U5LO57--5RC4c",
+  authDomain:"arogya-mandir.firebaseapp.com",
+  databaseURL:"https://arogya-mandir-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"arogya-mandir",
+  storageBucket:"arogya-mandir.firebasestorage.app",
+  messagingSenderId:"1009631773440",
+  appId:"1:1009631773440:web:6d2b250714f849b3e969e5"
+};
+let db=null;
+let firebaseReady=false;
+
+// Initialize Firebase if available
+try{
+  if(typeof firebase!=='undefined'){
+    firebase.initializeApp(firebaseConfig);
+    db=firebase.database();
+    firebaseReady=true;
+  }
+}catch(e){console.log('Firebase not configured yet');}
+
+// Generate next 10 Tuesdays
+function generateTuesdays(){
+  const sel=document.getElementById('apptDate');
+  const today=new Date();
+  today.setHours(0,0,0,0);
+  let count=0;
+  let d=new Date(today);
+  while(count<10){
+    if(d.getDay()===2 && d>=today){
+      const val=d.toISOString().split('T')[0];
+      const label=d.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+      const opt=document.createElement('option');
+      opt.value=val;
+      opt.textContent=label;
+      sel.appendChild(opt);
+      count++;
+    }
+    d.setDate(d.getDate()+1);
+  }
+}
+generateTuesdays();
+
+// On date change — load available serials
+function onDateChange(){
+  const dateVal=document.getElementById('apptDate').value;
+  const serialSel=document.getElementById('timeSlot');
+  const info=document.getElementById('serialInfo');
+  serialSel.innerHTML='<option value="">Loading...</option>';
+  serialSel.disabled=true;
+
+  if(!dateVal){
+    serialSel.innerHTML='<option value="">Select date first</option>';
+    info.style.display='none';
+    return;
+  }
+
+  if(firebaseReady&&db){
+    // Fetch taken serials from Firebase
+    db.ref('serials/'+dateVal).once('value').then(snap=>{
+      const taken=snap.val()||{};
+      const takenNums=Object.values(taken);
+      buildSerialOptions(takenNums,info,serialSel);
+    }).catch(()=>{
+      buildSerialOptions([],info,serialSel);
+    });
   }else{
-    err.style.display='none';
+    // Firebase not ready — show all serials (offline mode)
+    buildSerialOptions([],info,serialSel);
+  }
+}
+
+function buildSerialOptions(takenNums,info,serialSel){
+  serialSel.innerHTML='<option value="">Select your serial no.</option>';
+  let available=0;
+  for(let i=1;i<=40;i++){
+    if(!takenNums.includes(i)){
+      const opt=document.createElement('option');
+      opt.value=i;
+      opt.textContent='Serial No. '+i;
+      serialSel.appendChild(opt);
+      available++;
+    }
+  }
+  serialSel.disabled=false;
+  if(available===0){
+    serialSel.innerHTML='<option value="">All slots booked for this date</option>';
+    serialSel.disabled=true;
+    info.textContent='⚠ All 40 serials are booked. Try another Tuesday.';
+    info.style.display='block';
+  }else{
+    info.textContent='✓ '+available+' of 40 serials available';
+    info.style.display='block';
+  }
+}
+
+// Save taken serial to Firebase after successful booking
+function saveSerial(dateVal,serialNum){
+  if(firebaseReady&&db){
+    db.ref('serials/'+dateVal).push(parseInt(serialNum));
   }
 }
 
@@ -900,18 +997,8 @@ async function submitAppointment(){
   const name=document.getElementById('fname').value.trim();
   const phone=document.getElementById('phone').value.trim();
   const email=document.getElementById('email').value.trim();
-  const date=document.getElementById('apptDate').value||'Flexible';
-  const time=document.getElementById('timeSlot').value||'Not selected';
-
-  // Validate Tuesday
-  if(date!=='Flexible'){
-    const d=new Date(date);
-    if(d.getDay()!==2){
-      msg.style.display='block';msg.style.background='rgba(239,68,68,.15)';msg.style.color='#ef4444';
-      msg.textContent='Please select a Tuesday. Clinic is open only on Tuesdays.';
-      btn.disabled=false;btnText.textContent='Submit Appointment Request';btn.style.opacity='1';return;
-    }
-  }
+  const date=document.getElementById('apptDate').value;
+  const serial=document.getElementById('timeSlot').value;
   const condition=document.getElementById('condition').value||'General';
   const desc=document.getElementById('description').value.trim()||'N/A';
   const msg=document.getElementById('formMessage');
@@ -924,6 +1011,14 @@ async function submitAppointment(){
     msg.style.color='#ef4444';
     msg.textContent='Please fill in your name and phone number.';
     return;
+  }
+  if(!date){
+    msg.style.display='block';msg.style.background='rgba(239,68,68,.15)';msg.style.color='#ef4444';
+    msg.textContent='Please select a Tuesday date.';return;
+  }
+  if(!serial){
+    msg.style.display='block';msg.style.background='rgba(239,68,68,.15)';msg.style.color='#ef4444';
+    msg.textContent='Please select a serial number.';return;
   }
 
   // Disable button & show loading
@@ -940,7 +1035,7 @@ async function submitAppointment(){
         phone:phone,
         email:email||'Not provided',
         preferred_date:date,
-        serial_number:time,
+        serial_number:serial,
         condition:condition,
         description:desc,
         _subject:'New Appointment — Arogya Mandir | '+name
@@ -951,7 +1046,14 @@ async function submitAppointment(){
       msg.style.display='block';
       msg.style.background='rgba(10,104,71,.15)';
       msg.style.color='#16a34a';
-      msg.innerHTML='✓ Appointment booked successfully! We will contact you shortly to confirm.';
+      msg.innerHTML='✓ Appointment booked! Your <strong>Serial No. '+serial+'</strong> on <strong>'+date+'</strong> is confirmed. We will contact you shortly.';
+
+      // Save serial to Firebase
+      saveSerial(date,serial);
+
+      // Send via WhatsApp
+      const waMsg=`*New Appointment — Arogya Mandir*%0A%0AName: ${name}%0APhone: ${phone}%0ADate: ${date}%0ASerial No: ${serial}%0ACondition: ${condition}%0ADescription: ${desc}`;
+      setTimeout(()=>{window.open(`https://wa.me/919861233006?text=${waMsg}`,'_blank')},1500);
 
       // Clear form
       document.getElementById('fname').value='';
@@ -959,12 +1061,10 @@ async function submitAppointment(){
       document.getElementById('email').value='';
       document.getElementById('apptDate').value='';
       document.getElementById('condition').value='';
-      document.getElementById('timeSlot').value='';
+      document.getElementById('timeSlot').innerHTML='<option value="">Select date first</option>';
+      document.getElementById('timeSlot').disabled=true;
+      document.getElementById('serialInfo').style.display='none';
       document.getElementById('description').value='';
-
-      // Also send via WhatsApp
-      const waMsg=`*New Appointment — Arogya Mandir*%0A%0AName: ${name}%0APhone: ${phone}%0ADate: ${date}%0ASerial No: ${time}%0ACondition: ${condition}%0ADescription: ${desc}`;
-      setTimeout(()=>{window.open(`https://wa.me/919861233006?text=${waMsg}`,'_blank')},1500);
     }else{
       const data=await res.json();
       msg.style.display='block';
