@@ -83,13 +83,18 @@ nav.scrolled{background:rgba(255,248,240,.95);backdrop-filter:blur(20px);box-sha
 .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(249,115,22,.08);padding:8px 18px;border-radius:50px;font-size:.8rem;font-weight:600;color:var(--orange-dark);margin-bottom:24px;border:1px solid rgba(249,115,22,.15)}
 .hero-badge .dot{width:8px;height:8px;background:var(--orange);border-radius:50%;animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.consult-fee-hero{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;border-radius:50px;background:linear-gradient(135deg,rgba(249,115,22,.1),rgba(212,168,83,.1));border:1.5px solid rgba(249,115,22,.25);margin-bottom:20px;animation:fee-glow 2.5s ease-in-out infinite}
-.fee-icon{font-size:1.1rem;animation:fee-spin 3s linear infinite}
-.fee-text{font-size:.8rem;font-weight:600;color:var(--charcoal);letter-spacing:.3px}
-.fee-amount{font-family:'Playfair Display',serif;font-size:1rem;font-weight:800;color:var(--orange);animation:fee-blink 1.5s ease-in-out infinite}
-@keyframes fee-glow{0%,100%{box-shadow:0 0 8px rgba(249,115,22,.1)}50%{box-shadow:0 0 20px rgba(249,115,22,.25)}}
-@keyframes fee-blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.05)}}
+.consult-fee-hero{display:inline-flex;align-items:center;gap:10px;padding:12px 28px;border-radius:60px;background:linear-gradient(135deg,rgba(249,115,22,.12),rgba(212,168,83,.08),rgba(249,115,22,.12));border:2px solid rgba(249,115,22,.35);margin-bottom:22px;animation:fee-glow 2s ease-in-out infinite;position:relative;overflow:visible;cursor:default}
+.fee-pulse-ring{position:absolute;inset:-4px;border-radius:60px;border:2px solid var(--orange);opacity:0;animation:fee-ring-pulse 2s ease-in-out infinite}
+.fee-icon{font-size:1.4rem;animation:fee-spin 3s linear infinite;filter:drop-shadow(0 0 4px rgba(249,115,22,.4))}
+.fee-text{font-size:.9rem;font-weight:700;color:var(--charcoal);letter-spacing:.5px}
+.fee-divider{color:var(--orange-light);font-weight:300;font-size:1.2rem}
+.fee-amount{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;color:var(--orange);animation:fee-blink 1.2s ease-in-out infinite;text-shadow:0 0 12px rgba(249,115,22,.3)}
+.fee-star{font-size:1rem;animation:fee-star-twinkle 1.5s ease-in-out infinite}
+@keyframes fee-glow{0%,100%{box-shadow:0 0 10px rgba(249,115,22,.1),0 0 30px rgba(249,115,22,.05)}50%{box-shadow:0 0 20px rgba(249,115,22,.3),0 0 50px rgba(249,115,22,.1)}}
+@keyframes fee-ring-pulse{0%{opacity:0;transform:scale(1)}50%{opacity:.6}100%{opacity:0;transform:scale(1.08)}}
+@keyframes fee-blink{0%,100%{opacity:1;transform:scale(1);color:var(--orange)}40%{opacity:.4;transform:scale(1.1);color:var(--orange-dark)}70%{opacity:1;transform:scale(1.15);color:var(--orange)}}
 @keyframes fee-spin{0%{transform:rotateY(0deg)}100%{transform:rotateY(360deg)}}
+@keyframes fee-star-twinkle{0%,100%{opacity:1;transform:scale(1) rotate(0deg)}50%{opacity:.3;transform:scale(.7) rotate(180deg)}}
 .hero-text h1{font-family:'Playfair Display',serif;font-size:3.8rem;font-weight:800;line-height:1.1;color:var(--charcoal);margin-bottom:8px}
 .hero-text h1 .odia-title{display:block;font-family:'Noto Sans Oriya',sans-serif;font-size:2.4rem;color:var(--emerald);margin-bottom:8px}
 .hero-text h1 .highlight{background:linear-gradient(120deg,var(--emerald),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
@@ -313,6 +318,10 @@ footer{background:var(--charcoal);border-top:1px solid rgba(255,255,255,.06);pad
   .coin-3d{width:40px;height:40px}
   .hero{padding:100px 24px 60px}
   .hero-text h1{font-size:2.2rem}
+  .consult-fee-hero{padding:10px 18px;gap:6px}
+  .fee-text{font-size:.75rem}
+  .fee-amount{font-size:1.1rem}
+  .fee-divider{font-size:1rem}
   .hero-text h1 .odia-title{font-size:1.6rem}
   .services-grid{grid-template-columns:1fr}
   .why-grid{grid-template-columns:1fr}
@@ -378,9 +387,12 @@ footer{background:var(--charcoal);border-top:1px solid rgba(255,255,255,.06);pad
     <div class="hero-text">
       <div class="hero-badge"><span class="dot"></span> Now Accepting Appointments</div>
       <div class="consult-fee-hero">
+        <span class="fee-pulse-ring"></span>
         <span class="fee-icon">🪙</span>
         <span class="fee-text">Consulting Fee</span>
-        <span class="fee-amount">₹1 Only</span>
+        <span class="fee-divider">|</span>
+        <span class="fee-amount">Rs. <span style="font-size:1.8rem;line-height:1">1</span> Only</span>
+        <span class="fee-star">✨</span>
       </div>
       <h1>
         <span class="odia-title odia">ଆରୋଗ୍ୟ ମନ୍ଦିର</span>
