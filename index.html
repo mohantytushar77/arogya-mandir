@@ -946,6 +946,14 @@ try{
   }
 }catch(e){console.log('Firebase not configured yet');}
 
+// Format date in local timezone (YYYY-MM-DD)
+function formatLocalDate(date){
+  const y=date.getFullYear();
+  const m=String(date.getMonth()+1).padStart(2,'0');
+  const dd=String(date.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+dd;
+}
+
 // Generate next 10 Tuesdays
 function generateTuesdays(){
   const sel=document.getElementById('apptDate');
@@ -955,7 +963,7 @@ function generateTuesdays(){
   let d=new Date(today);
   while(count<10){
     if(d.getDay()===2 && d>=today){
-      const val=d.toISOString().split('T')[0];
+      const val=formatLocalDate(d);
       const label=d.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
       const opt=document.createElement('option');
       opt.value=val;
