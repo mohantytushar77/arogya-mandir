@@ -788,6 +788,21 @@ footer{background:var(--charcoal);border-top:1px solid rgba(255,255,255,.06);pad
     </div>
     <div class="form-row">
       <div class="form-group">
+        <label>Age <span style="color:var(--orange)">*</span></label>
+        <input type="number" placeholder="Enter your age" id="age" name="age" min="1" max="120" required>
+      </div>
+      <div class="form-group">
+        <label>Sex <span style="color:var(--orange)">*</span></label>
+        <select id="sex" name="sex" required>
+          <option value="">Select</option>
+          <option>Male</option>
+          <option>Female</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
         <label>Condition / Service</label>
         <select id="condition" name="condition">
           <option value="">Select your condition</option>
@@ -1099,6 +1114,8 @@ async function submitAppointment(){
   const name=document.getElementById('fname').value.trim();
   const phone=document.getElementById('phone').value.trim();
   const address=document.getElementById('address').value.trim();
+  const age=document.getElementById('age').value.trim();
+  const sex=document.getElementById('sex').value;
   const date=document.getElementById('apptDate').value;
   const serial=document.getElementById('timeSlot').value;
   const condition=document.getElementById('condition').value||'General';
@@ -1107,15 +1124,17 @@ async function submitAppointment(){
   const btn=document.getElementById('submitBtn');
   const btnText=document.getElementById('btnText');
 
-  if(!name||!phone||!address){
+  if(!name||!phone||!address||!age||!sex){
     msg.style.display='block';
     msg.style.background='rgba(239,68,68,.15)';
     msg.style.color='#ef4444';
-    msg.textContent='Please fill in your name, phone number and address (marked with *).';
+    msg.textContent='Please fill in all required fields (marked with *).';
     if(!name)document.getElementById('fname').style.border='1.5px solid #ef4444';
     if(!phone)document.getElementById('phone').style.border='1.5px solid #ef4444';
     if(!address)document.getElementById('address').style.border='1.5px solid #ef4444';
-    setTimeout(()=>{document.getElementById('fname').style.border='';document.getElementById('phone').style.border='';document.getElementById('address').style.border='';},3000);
+    if(!age)document.getElementById('age').style.border='1.5px solid #ef4444';
+    if(!sex)document.getElementById('sex').style.border='1.5px solid #ef4444';
+    setTimeout(()=>{document.getElementById('fname').style.border='';document.getElementById('phone').style.border='';document.getElementById('address').style.border='';document.getElementById('age').style.border='';document.getElementById('sex').style.border='';},3000);
     return;
   }
   if(!date){
@@ -1143,7 +1162,7 @@ async function submitAppointment(){
     msg.innerHTML='✓ Your <strong>Serial No. '+serial+'</strong> on <strong>'+date+'</strong> is reserved. Please complete booking on WhatsApp.';
 
     // Send via WhatsApp
-    const waMsg=`*New Appointment — Arogya Mandir*%0A%0AName: ${name}%0APhone: ${phone}%0AAddress: ${address}%0ADate: ${date}%0ASerial No: ${serial}%0ACondition: ${condition}%0ADescription: ${desc}`;
+    const waMsg=`*New Appointment — Arogya Mandir*%0A%0AName: ${name}%0APhone: ${phone}%0AAge: ${age}%0ASex: ${sex}%0AAddress: ${address}%0ADate: ${date}%0ASerial No: ${serial}%0ACondition: ${condition}%0ADescription: ${desc}`;
     setTimeout(()=>{window.open(`https://wa.me/919078335033?text=${waMsg}`,'_blank')},800);
 
     // Clear form
@@ -1151,6 +1170,8 @@ async function submitAppointment(){
       document.getElementById('fname').value='';
       document.getElementById('phone').value='';
       document.getElementById('address').value='';
+      document.getElementById('age').value='';
+      document.getElementById('sex').value='';
       document.getElementById('apptDate').value='';
       document.getElementById('condition').value='';
       document.getElementById('timeSlot').innerHTML='<option value="">Select date first</option>';
