@@ -1059,6 +1059,17 @@ function saveSerial(dateVal,serialNum){
   }
 }
 
+// Save full booking details to Firebase
+function saveBooking(data){
+  if(firebaseReady&&db){
+    db.ref('bookings/'+data.date).push({
+      ...data,
+      timestamp:Date.now(),
+      bookedAt:new Date().toLocaleString('en-IN',{timeZone:'Asia/Kolkata'})
+    });
+  }
+}
+
 // Mobile menu
 function toggleMenu(){
   document.getElementById('navLinks').classList.toggle('active');
@@ -1162,6 +1173,9 @@ async function submitAppointment(){
   try{
     // Save serial to Firebase
     saveSerial(date,serial);
+    
+    // Save full booking details
+    saveBooking({name,phone,age,sex,address,date,serial:parseInt(serial),condition,description:desc,source:'website'});
 
     // Show success message
     msg.style.display='block';
