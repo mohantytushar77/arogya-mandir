@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Arogya Mandir</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--emerald:#0a6847;--orange:#f97316;--charcoal:#1a1a2e;--white:#fff;--cream:#fefcf3;--text:#2d3436;--text-light:#636e72;--border:#e5e7eb;--bg:#f8fafc}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* Login Screen */
+#login{position:fixed;inset:0;background:linear-gradient(135deg,var(--charcoal),#0d1b2a);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.login-box{background:var(--white);padding:40px 32px;border-radius:20px;box-shadow:0 20px 80px rgba(0,0,0,.3);max-width:400px;width:100%;text-align:center}
+.login-logo{width:60px;height:60px;background:linear-gradient(135deg,var(--emerald),var(--orange));border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;color:var(--white);font-family:'Playfair Display',serif;font-weight:800;font-size:1.5rem}
+.login-box h1{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--charcoal);margin-bottom:6px}
+.login-box p{font-size:.85rem;color:var(--text-light);margin-bottom:20px}
+.login-box input{width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;transition:.3s;margin-bottom:12px}
+.login-box input:focus{border-color:var(--orange)}
+.login-box button{width:100%;padding:12px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--emerald),var(--orange));color:var(--white);font-weight:700;font-size:.9rem;cursor:pointer;transition:.3s}
+.login-box button:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(249,115,22,.3)}
+.login-error{color:#ef4444;font-size:.8rem;margin-top:10px;display:none}
+
+/* Main Dashboard */
+.dashboard{display:none;min-height:100vh}
+.topbar{background:var(--white);padding:16px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.topbar-brand{display:flex;align-items:center;gap:12px}
+.topbar-logo{width:42px;height:42px;background:linear-gradient(135deg,var(--emerald),var(--orange));border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--white);font-family:'Playfair Display',serif;font-weight:800}
+.topbar-brand h2{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--charcoal)}
+.topbar-brand small{font-size:.7rem;color:var(--text-light)}
+.logout-btn{padding:8px 16px;border:1.5px solid var(--border);background:var(--white);border-radius:8px;cursor:pointer;font-size:.78rem;font-weight:600;color:var(--text);transition:.3s}
+.logout-btn:hover{background:#fef2f2;border-color:#ef4444;color:#ef4444}
+
+.container{max-width:1400px;margin:0 auto;padding:24px}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--white);padding:20px;border-radius:14px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,.03)}
+.stat-card .label{font-size:.72rem;color:var(--text-light);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.stat-card .value{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:800;color:var(--charcoal)}
+.stat-card .sub{font-size:.72rem;color:var(--emerald);margin-top:4px}
+.stat-card.orange{border-left:4px solid var(--orange)}
+.stat-card.emerald{border-left:4px solid var(--emerald)}
+.stat-card.blue{border-left:4px solid #3b82f6}
+.stat-card.purple{border-left:4px solid #a855f7}
+
+/* Controls */
+.controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--white);padding:16px;border-radius:14px;border:1px solid var(--border);margin-bottom:16px}
+.control-group{display:flex;flex-direction:column;gap:4px}
+.control-group label{font-size:.7rem;color:var(--text-light);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.control-group select,.control-group input{padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.82rem;outline:none;background:var(--white)}
+.control-group select:focus,.control-group input:focus{border-color:var(--orange)}
+.btn{padding:9px 16px;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:.3s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:linear-gradient(135deg,var(--emerald),var(--orange));color:var(--white)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(249,115,22,.3)}
+.btn-outline{background:var(--white);border:1.5px solid var(--border);color:var(--text)}
+.btn-outline:hover{border-color:var(--orange);color:var(--orange)}
+.search-input{flex:1;min-width:200px}
+
+/* Table */
+.table-wrap{background:var(--white);border-radius:14px;border:1px solid var(--border);overflow:hidden;margin-bottom:24px}
+.table-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.table-title{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--charcoal);font-weight:700}
+.table-count{font-size:.75rem;color:var(--text-light);background:var(--bg);padding:4px 12px;border-radius:50px;font-weight:600}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+thead{background:var(--bg)}
+th{padding:12px 16px;text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.5px;font-weight:700;color:var(--text-light);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:14px 16px;border-bottom:1px solid var(--border);color:var(--text)}
+tbody tr{transition:.2s}
+tbody tr:hover{background:#fef9f3}
+.serial-tag{display:inline-block;padding:3px 10px;background:linear-gradient(135deg,var(--emerald),var(--orange));color:var(--white);border-radius:50px;font-weight:700;font-size:.75rem;min-width:36px;text-align:center}
+.source-tag{display:inline-block;padding:3px 10px;border-radius:50px;font-size:.68rem;font-weight:600;text-transform:capitalize}
+.source-tag.website{background:rgba(10,104,71,.1);color:var(--emerald)}
+.source-tag.google{background:rgba(66,133,244,.1);color:#4285f4}
+.source-tag.instagram{background:rgba(225,48,108,.1);color:#e1306c}
+.source-tag.facebook{background:rgba(59,89,152,.1);color:#3b5998}
+.source-tag.direct{background:rgba(100,100,100,.1);color:#666}
+.action-btn{padding:5px 10px;background:transparent;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:.72rem;font-weight:600;color:var(--text-light);transition:.2s;margin-right:4px}
+.action-btn:hover{background:var(--orange);border-color:var(--orange);color:var(--white)}
+.action-btn.wa:hover{background:#25d366;border-color:#25d366;color:var(--white)}
+.action-btn.delete:hover{background:#ef4444;border-color:#ef4444;color:var(--white)}
+
+.empty{padding:60px 20px;text-align:center;color:var(--text-light)}
+.empty .icon{font-size:3rem;margin-bottom:12px}
+.empty h3{font-family:'Playfair Display',serif;color:var(--charcoal);margin-bottom:6px}
+.empty p{font-size:.85rem}
+
+.loading{padding:40px;text-align:center;color:var(--text-light)}
+.loading .spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:768px){
+  .stats{grid-template-columns:1fr 1fr}
+  .controls{flex-direction:column;align-items:stretch}
+  .control-group{width:100%}
+  th,td{padding:10px 12px;font-size:.78rem}
+}
+</style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="login">
+  <div class="login-box">
+    <div class="login-logo">আ</div>
+    <h1>Arogya Mandir Admin</h1>
+    <p>Enter password to access dashboard</p>
+    <input type="password" id="password" placeholder="Enter password" onkeypress="if(event.key==='Enter')doLogin()">
+    <button onclick="doLogin()">Login</button>
+    <div class="login-error" id="loginError">Wrong password. Try again.</div>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div class="dashboard" id="dashboard">
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-logo">A</div>
+      <div>
+        <h2>Admin Dashboard</h2>
+        <small>Arogya Mandir Clinic Management</small>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="doLogout()">Logout</button>
+  </div>
+
+  <div class="container">
+    <!-- Stats -->
+    <div class="stats" id="stats">
+      <div class="stat-card emerald">
+        <div class="label">Total Bookings</div>
+        <div class="value" id="totalBookings">0</div>
+        <div class="sub">All time</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="label">Selected Date</div>
+        <div class="value" id="dateBookings">0</div>
+        <div class="sub" id="dateLabel">No date selected</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="label">Available Serials</div>
+        <div class="value" id="availSerials">40</div>
+        <div class="sub">For selected date</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="label">Total Tuesdays</div>
+        <div class="value" id="totalDates">0</div>
+        <div class="sub">With bookings</div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <div class="control-group">
+        <label>Filter by Date</label>
+        <select id="dateFilter" onchange="renderTable()">
+          <option value="">All Dates</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Filter by Source</label>
+        <select id="sourceFilter" onchange="renderTable()">
+          <option value="">All Sources</option>
+          <option value="website">Website</option>
+          <option value="google">Google Business</option>
+          <option value="instagram">Instagram</option>
+          <option value="facebook">Facebook</option>
+          <option value="direct">Direct</option>
+        </select>
+      </div>
+      <div class="control-group search-input">
+        <label>Search</label>
+        <input type="text" id="searchInput" placeholder="Name, phone, condition..." oninput="renderTable()">
+      </div>
+      <div class="control-group">
+        <label>&nbsp;</label>
+        <button class="btn btn-outline" onclick="loadData()">🔄 Refresh</button>
+      </div>
+      <div class="control-group">
+        <label>&nbsp;</label>
+        <button class="btn btn-primary" onclick="downloadCSV()">⬇️ Download CSV</button>
+      </div>
+      <div class="control-group">
+        <label>&nbsp;</label>
+        <button class="btn btn-outline" onclick="printTable()">🖨️ Print</button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <div class="table-header">
+        <div class="table-title">Patient Bookings</div>
+        <div class="table-count" id="tableCount">0 records</div>
+      </div>
+      <div class="table-scroll" id="tableContent">
+        <div class="loading"><div class="spinner"></div>Loading bookings...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+// ===== CHANGE THIS PASSWORD =====
+const ADMIN_PASSWORD = "arogya@2026";
+// ================================
+
+const firebaseConfig={
+  apiKey:"AIzaSyCLdl5uCoSuzRD6P2DS44U5LO57--5RC4c",
+  authDomain:"arogya-mandir.firebaseapp.com",
+  databaseURL:"https://arogya-mandir-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"arogya-mandir",
+  storageBucket:"arogya-mandir.firebasestorage.app",
+  messagingSenderId:"1009631773440",
+  appId:"1:1009631773440:web:6d2b250714f849b3e969e5"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let allBookings = [];
+
+// Login
+function doLogin(){
+  const pwd = document.getElementById('password').value;
+  if(pwd === ADMIN_PASSWORD){
+    sessionStorage.setItem('adminAuth','true');
+    showDashboard();
+  } else {
+    document.getElementById('loginError').style.display='block';
+  }
+}
+function doLogout(){
+  sessionStorage.removeItem('adminAuth');
+  location.reload();
+}
+function showDashboard(){
+  document.getElementById('login').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  loadData();
+}
+if(sessionStorage.getItem('adminAuth')==='true'){showDashboard();}
+
+// Load all bookings from Firebase
+function loadData(){
+  document.getElementById('tableContent').innerHTML='<div class="loading"><div class="spinner"></div>Loading bookings...</div>';
+  db.ref('bookings').once('value').then(snap=>{
+    const data = snap.val() || {};
+    allBookings = [];
+    Object.keys(data).forEach(date=>{
+      const dayBookings = data[date];
+      Object.keys(dayBookings).forEach(key=>{
+        allBookings.push({...dayBookings[key], _key:key, _date:date});
+      });
+    });
+    // Sort by serial number ascending
+    allBookings.sort((a,b)=>{
+      if(a.date===b.date) return (a.serial||0)-(b.serial||0);
+      return b.date.localeCompare(a.date);
+    });
+    populateDateFilter();
+    updateStats();
+    renderTable();
+  }).catch(err=>{
+    document.getElementById('tableContent').innerHTML='<div class="empty"><div class="icon">⚠️</div><h3>Error loading data</h3><p>'+err.message+'</p></div>';
+  });
+}
+
+function populateDateFilter(){
+  const dates = [...new Set(allBookings.map(b=>b.date))].sort().reverse();
+  const sel = document.getElementById('dateFilter');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">All Dates</option>';
+  dates.forEach(d=>{
+    const dt = new Date(d);
+    const label = dt.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'short',year:'numeric'});
+    const opt = document.createElement('option');
+    opt.value = d;
+    opt.textContent = label;
+    sel.appendChild(opt);
+  });
+  if(current) sel.value = current;
+}
+
+function updateStats(){
+  document.getElementById('totalBookings').textContent = allBookings.length;
+  const dates = [...new Set(allBookings.map(b=>b.date))];
+  document.getElementById('totalDates').textContent = dates.length;
+  
+  const selectedDate = document.getElementById('dateFilter').value;
+  if(selectedDate){
+    const count = allBookings.filter(b=>b.date===selectedDate).length;
+    document.getElementById('dateBookings').textContent = count;
+    document.getElementById('availSerials').textContent = 40 - count;
+    const dt = new Date(selectedDate);
+    document.getElementById('dateLabel').textContent = dt.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'short'});
+  } else {
+    // Show today/next Tuesday
+    document.getElementById('dateBookings').textContent = '—';
+    document.getElementById('availSerials').textContent = '—';
+    document.getElementById('dateLabel').textContent = 'Select a date';
+  }
+}
+
+function getFilteredBookings(){
+  const dateF = document.getElementById('dateFilter').value;
+  const sourceF = document.getElementById('sourceFilter').value;
+  const search = document.getElementById('searchInput').value.toLowerCase().trim();
+  return allBookings.filter(b=>{
+    if(dateF && b.date !== dateF) return false;
+    if(sourceF && (b.source||'website') !== sourceF) return false;
+    if(search){
+      const txt = ((b.name||'')+' '+(b.phone||'')+' '+(b.condition||'')+' '+(b.address||'')).toLowerCase();
+      if(!txt.includes(search)) return false;
+    }
+    return true;
+  });
+}
+
+function renderTable(){
+  updateStats();
+  const data = getFilteredBookings();
+  document.getElementById('tableCount').textContent = data.length + ' record' + (data.length===1?'':'s');
+  
+  if(data.length === 0){
+    document.getElementById('tableContent').innerHTML = '<div class="empty"><div class="icon">📭</div><h3>No bookings found</h3><p>No appointments match your filters yet.</p></div>';
+    return;
+  }
+  
+  let html = '<table><thead><tr><th>Serial</th><th>Name</th><th>Phone</th><th>Age/Sex</th><th>Address</th><th>Date</th><th>Condition</th><th>Source</th><th>Booked At</th><th>Action</th></tr></thead><tbody>';
+  data.forEach(b=>{
+    const dt = new Date(b.date);
+    const dateLabel = dt.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+    html += `<tr>
+      <td><span class="serial-tag">${b.serial||'-'}</span></td>
+      <td><strong>${b.name||'-'}</strong></td>
+      <td><a href="tel:+91${b.phone}" style="color:var(--emerald);text-decoration:none">${b.phone||'-'}</a></td>
+      <td>${b.age||'-'} / ${b.sex||'-'}</td>
+      <td style="max-width:200px;font-size:.78rem">${b.address||'-'}</td>
+      <td>${dateLabel}</td>
+      <td>${b.condition||'-'}</td>
+      <td><span class="source-tag ${b.source||'website'}">${b.source||'website'}</span></td>
+      <td style="font-size:.72rem;color:var(--text-light)">${b.bookedAt||'-'}</td>
+      <td>
+        <button class="action-btn wa" onclick="openWA('${b.phone}','${b.name}','${b.date}',${b.serial})" title="WhatsApp">💬</button>
+        <button class="action-btn delete" onclick="deleteBooking('${b._date}','${b._key}','${b.serial}')" title="Delete">🗑️</button>
+      </td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('tableContent').innerHTML = html;
+}
+
+function openWA(phone, name, date, serial){
+  const msg = `Hi ${name}, this is Arogya Mandir Clinic. Confirming your appointment on ${date} - Serial No. ${serial}. See you on Tuesday between 3-9 PM.`;
+  window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function deleteBooking(date, key, serial){
+  if(!confirm('Delete this booking? This will also free up Serial No. '+serial+' for this date.')) return;
+  // Remove from bookings
+  db.ref('bookings/'+date+'/'+key).remove().then(()=>{
+    // Find and remove the matching serial entry
+    db.ref('serials/'+date).once('value').then(snap=>{
+      const serials = snap.val() || {};
+      Object.keys(serials).forEach(sk=>{
+        if(serials[sk] === parseInt(serial)){
+          db.ref('serials/'+date+'/'+sk).remove();
+        }
+      });
+    });
+    loadData();
+  });
+}
+
+function downloadCSV(){
+  const data = getFilteredBookings();
+  if(data.length === 0){alert('No data to download');return;}
+  
+  const headers = ['Serial','Name','Phone','Age','Sex','Address','Date','Condition','Description','Source','Booked At'];
+  let csv = headers.join(',') + '\n';
+  data.forEach(b=>{
+    const row = [
+      b.serial||'',
+      `"${(b.name||'').replace(/"/g,'""')}"`,
+      b.phone||'',
+      b.age||'',
+      b.sex||'',
+      `"${(b.address||'').replace(/"/g,'""')}"`,
+      b.date||'',
+      `"${(b.condition||'').replace(/"/g,'""')}"`,
+      `"${(b.description||'').replace(/"/g,'""')}"`,
+      b.source||'website',
+      `"${b.bookedAt||''}"`
+    ];
+    csv += row.join(',') + '\n';
+  });
+  
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateF = document.getElementById('dateFilter').value || 'all';
+  a.href = url;
+  a.download = `arogya-mandir-bookings-${dateF}-${Date.now()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function printTable(){
+  window.print();
+}
+
+// Auto-refresh every 30 seconds
+setInterval(()=>{
+  if(document.getElementById('dashboard').style.display === 'block'){
+    loadData();
+  }
+}, 30000);
+</script>
+</body>
+</html>
