@@ -285,6 +285,7 @@ function buildSerials(taken,sel,info){
   else{info.textContent='✓ '+avail+' of 40 available';info.style.display='block';}
 }
 function saveSerial(d,s){if(firebaseReady&&db)db.ref('serials/'+d).push(parseInt(s));}
+function saveBooking(data){if(firebaseReady&&db)db.ref('bookings/'+data.date).push({...data,timestamp:Date.now(),bookedAt:new Date().toLocaleString('en-IN',{timeZone:'Asia/Kolkata'})});}
 
 // Submit
 function submitBooking(){
@@ -313,6 +314,7 @@ function submitBooking(){
   btn.disabled=true;btnText.textContent='Opening WhatsApp...';btn.style.opacity='.6';
   try{
     saveSerial(date,serial);
+    saveBooking({name,phone,age,sex,address,date,serial:parseInt(serial),condition,description:desc,source:source||'direct'});
     const src=source?' (via '+source+')':'';
     msg.style.display='block';msg.style.background='rgba(10,104,71,.15)';msg.style.color='#16a34a';
     msg.innerHTML='✓ Serial No. <strong>'+serial+'</strong> on <strong>'+date+'</strong> reserved! Confirm on WhatsApp.';
