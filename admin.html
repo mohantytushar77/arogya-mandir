@@ -144,7 +144,7 @@ tbody tr:hover{background:#fef9f3}
       </div>
       <div class="stat-card blue">
         <div class="label">Available Serials</div>
-        <div class="value" id="availSerials">40</div>
+        <div class="value" id="availSerials">45</div>
         <div class="sub">For selected date</div>
       </div>
       <div class="stat-card purple">
@@ -296,7 +296,7 @@ function updateStats(){
   if(selectedDate){
     const count = allBookings.filter(b=>b.date===selectedDate).length;
     document.getElementById('dateBookings').textContent = count;
-    document.getElementById('availSerials').textContent = 40 - count;
+    document.getElementById('availSerials').textContent = 45 - count;
     const dt = new Date(selectedDate);
     document.getElementById('dateLabel').textContent = dt.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'short'});
   } else {
