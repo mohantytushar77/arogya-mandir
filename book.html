@@ -163,7 +163,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
         </select>
       </div>
       <div class="form-group">
-        <label>Serial Number (Max 40)</label>
+        <label>Serial Number (Max 45)</label>
         <select id="serialNo" disabled>
           <option value="">Select date first</option>
         </select>
@@ -276,14 +276,14 @@ function onDateChange(){
 function buildSerials(taken,sel,info){
   sel.innerHTML='<option value="">Select serial no.</option>';
   let avail=0;
-  for(let i=1;i<=40;i++){
+  for(let i=1;i<=45;i++){
     if(!taken.includes(i)){
       const o=document.createElement('option');o.value=i;o.textContent='Serial No. '+i;sel.appendChild(o);avail++;
     }
   }
   sel.disabled=false;
-  if(!avail){sel.innerHTML='<option value="">All booked</option>';sel.disabled=true;info.textContent='⚠ All 40 serials booked. Try another Tuesday.';info.style.display='block';}
-  else{info.textContent='✓ '+avail+' of 40 available';info.style.display='block';}
+  if(!avail){sel.innerHTML='<option value="">All booked</option>';sel.disabled=true;info.textContent='⚠ All 45 serials booked. Try another Tuesday.';info.style.display='block';}
+  else{info.textContent='✓ '+avail+' of 45 available';info.style.display='block';}
 }
 function saveSerial(d,s){if(firebaseReady&&db)db.ref('serials/'+d).push(parseInt(s));}
 function saveBooking(data){if(firebaseReady&&db)db.ref('bookings/'+data.date).push({...data,timestamp:Date.now(),bookedAt:new Date().toLocaleString('en-IN',{timeZone:'Asia/Kolkata'})});}
