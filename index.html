@@ -980,6 +980,9 @@ function formatLocalDate(date){
 }
 
 // Generate next 10 Tuesdays
+// Doctor leave dates (clinic closed) - format: YYYY-MM-DD
+const LEAVE_DATES = ['2026-05-26'];
+
 function generateTuesdays(){
   const sel=document.getElementById('apptDate');
   const today=new Date();
@@ -992,7 +995,14 @@ function generateTuesdays(){
       const label=d.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
       const opt=document.createElement('option');
       opt.value=val;
-      opt.textContent=label;
+      // Mark leave dates clearly
+      if(LEAVE_DATES.includes(val)){
+        opt.textContent=label+' — Doctor on Leave';
+        opt.disabled=true;
+        opt.style.color='#ef4444';
+      }else{
+        opt.textContent=label;
+      }
       sel.appendChild(opt);
       count++;
     }
@@ -1014,6 +1024,17 @@ function onDateChange(){
     info.style.display='none';
     return;
   }
+
+  // Check if doctor is on leave
+  if(LEAVE_DATES.includes(dateVal)){
+    serialSel.innerHTML='<option value="">Doctor on leave — Please choose another date</option>';
+    serialSel.disabled=true;
+    info.textContent='⚠ Doctor is on leave on this date. Please book for the next available Tuesday.';
+    info.style.display='block';
+    info.style.color='#ef4444';
+    return;
+  }
+  info.style.color='var(--orange)';
 
   if(firebaseReady&&db){
     // Fetch taken serials from Firebase
@@ -1161,6 +1182,10 @@ async function submitAppointment(){
   if(!date){
     msg.style.display='block';msg.style.background='rgba(239,68,68,.15)';msg.style.color='#ef4444';
     msg.textContent='Please select a Tuesday date.';return;
+  }
+  if(LEAVE_DATES.includes(date)){
+    msg.style.display='block';msg.style.background='rgba(239,68,68,.15)';msg.style.color='#ef4444';
+    msg.innerHTML='⚠ Doctor is on leave on '+date+'. Please book for the next available Tuesday.';return;
   }
   if(!serial){
     msg.style.display='block';msg.style.background='rgba(239,68,68,.15)';msg.style.color='#ef4444';
