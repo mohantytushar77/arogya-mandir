@@ -209,6 +209,9 @@ tbody tr:hover{background:#fef9f3}
 <script>
 // ===== CHANGE THIS PASSWORD =====
 const ADMIN_PASSWORD = "arogya@2026";
+
+// Doctor leave dates (clinic closed) - format: YYYY-MM-DD
+const LEAVE_DATES = ['2026-05-26'];
 // ================================
 
 const firebaseConfig={
@@ -272,16 +275,23 @@ function loadData(){
 }
 
 function populateDateFilter(){
-  const dates = [...new Set(allBookings.map(b=>b.date))].sort().reverse();
+  const bookingDates = [...new Set(allBookings.map(b=>b.date))];
+  // Include leave dates so admin can see them in filter
+  const allDates = [...new Set([...bookingDates, ...LEAVE_DATES])].sort().reverse();
   const sel = document.getElementById('dateFilter');
   const current = sel.value;
   sel.innerHTML = '<option value="">All Dates</option>';
-  dates.forEach(d=>{
+  allDates.forEach(d=>{
     const dt = new Date(d);
     const label = dt.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'short',year:'numeric'});
     const opt = document.createElement('option');
     opt.value = d;
-    opt.textContent = label;
+    if(LEAVE_DATES.includes(d)){
+      opt.textContent = label + ' 🚫 Doctor on Leave';
+      opt.style.color = '#ef4444';
+    }else{
+      opt.textContent = label;
+    }
     sel.appendChild(opt);
   });
   if(current) sel.value = current;
@@ -294,13 +304,19 @@ function updateStats(){
   
   const selectedDate = document.getElementById('dateFilter').value;
   if(selectedDate){
-    const count = allBookings.filter(b=>b.date===selectedDate).length;
-    document.getElementById('dateBookings').textContent = count;
-    document.getElementById('availSerials').textContent = 45 - count;
-    const dt = new Date(selectedDate);
-    document.getElementById('dateLabel').textContent = dt.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'short'});
+    if(LEAVE_DATES.includes(selectedDate)){
+      document.getElementById('dateBookings').textContent = '🚫';
+      document.getElementById('availSerials').textContent = '0';
+      const dt = new Date(selectedDate);
+      document.getElementById('dateLabel').textContent = 'Doctor on Leave — ' + dt.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+    }else{
+      const count = allBookings.filter(b=>b.date===selectedDate).length;
+      document.getElementById('dateBookings').textContent = count;
+      document.getElementById('availSerials').textContent = 45 - count;
+      const dt = new Date(selectedDate);
+      document.getElementById('dateLabel').textContent = dt.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'short'});
+    }
   } else {
-    // Show today/next Tuesday
     document.getElementById('dateBookings').textContent = '—';
     document.getElementById('availSerials').textContent = '—';
     document.getElementById('dateLabel').textContent = 'Select a date';
@@ -328,7 +344,14 @@ function renderTable(){
   document.getElementById('tableCount').textContent = data.length + ' record' + (data.length===1?'':'s');
   
   if(data.length === 0){
-    document.getElementById('tableContent').innerHTML = '<div class="empty"><div class="icon">📭</div><h3>No bookings found</h3><p>No appointments match your filters yet.</p></div>';
+    const selectedDate = document.getElementById('dateFilter').value;
+    if(selectedDate && LEAVE_DATES.includes(selectedDate)){
+      const dt = new Date(selectedDate);
+      const label = dt.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+      document.getElementById('tableContent').innerHTML = '<div class="empty"><div class="icon">🚫</div><h3>Doctor on Leave</h3><p>Clinic is closed on '+label+'. No bookings can be made for this date.</p></div>';
+    }else{
+      document.getElementById('tableContent').innerHTML = '<div class="empty"><div class="icon">📭</div><h3>No bookings found</h3><p>No appointments match your filters yet.</p></div>';
+    }
     return;
   }
   
