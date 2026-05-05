@@ -244,6 +244,9 @@ function formatLocalDate(d){
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 
+// Doctor leave dates (clinic closed) - format: YYYY-MM-DD
+const LEAVE_DATES = ['2026-05-26'];
+
 // Generate Tuesdays
 (function(){
   const sel=document.getElementById('apptDate');
@@ -252,8 +255,16 @@ function formatLocalDate(d){
   while(count<10){
     if(d.getDay()===2&&d>=today){
       const opt=document.createElement('option');
-      opt.value=formatLocalDate(d);
-      opt.textContent=d.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+      const val=formatLocalDate(d);
+      opt.value=val;
+      const label=d.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+      if(LEAVE_DATES.includes(val)){
+        opt.textContent=label+' — Doctor on Leave';
+        opt.disabled=true;
+        opt.style.color='#ef4444';
+      }else{
+        opt.textContent=label;
+      }
       sel.appendChild(opt);count++;
     }
     d.setDate(d.getDate()+1);
@@ -267,6 +278,15 @@ function onDateChange(){
   const info=document.getElementById('serialInfo');
   sel.innerHTML='<option value="">Loading...</option>';sel.disabled=true;
   if(!dateVal){sel.innerHTML='<option value="">Select date first</option>';info.style.display='none';return;}
+  if(LEAVE_DATES.includes(dateVal)){
+    sel.innerHTML='<option value="">Doctor on leave — Choose another date</option>';
+    sel.disabled=true;
+    info.textContent='⚠ Doctor is on leave on this date. Please book for the next available Tuesday.';
+    info.style.display='block';
+    info.style.color='#ef4444';
+    return;
+  }
+  info.style.color='var(--orange)';
   if(firebaseReady&&db){
     db.ref('serials/'+dateVal).once('value').then(snap=>{
       buildSerials(Object.values(snap.val()||{}),sel,info);
@@ -311,6 +331,7 @@ function submitBooking(){
     setTimeout(()=>fields.forEach(f=>{document.getElementById(f.id).style.border='';}),3000);return;
   }
   if(!date){msg.style.display='block';msg.style.background='rgba(239,68,68,.15)';msg.style.color='#ef4444';msg.textContent='Please select a Tuesday date.';return;}
+  if(LEAVE_DATES.includes(date)){msg.style.display='block';msg.style.background='rgba(239,68,68,.15)';msg.style.color='#ef4444';msg.innerHTML='⚠ Doctor is on leave on '+date+'. Please book for the next available Tuesday.';return;}
   if(!serial){msg.style.display='block';msg.style.background='rgba(239,68,68,.15)';msg.style.color='#ef4444';msg.textContent='Please select a serial number.';return;}
   btn.disabled=true;btnText.textContent='Opening WhatsApp...';btn.style.opacity='.6';
   try{
